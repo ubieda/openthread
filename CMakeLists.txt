@@ -45,6 +45,7 @@ set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_C_STANDARD 99)
 
 message(STATUS "OpenThread Source Directory: ${PROJECT_SOURCE_DIR}")
+message(STATUS "Forked version...")
 
 target_include_directories(ot-config INTERFACE
     ${PROJECT_SOURCE_DIR}/include
