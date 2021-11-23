@@ -29,7 +29,10 @@
 add_executable(ot-cli-radio
     cli_uart.cpp
     main.c
+    app.c
 )
+
+target_compile_definitions(ot-cli-radio PRIVATE OT_RCP)
 
 target_include_directories(ot-cli-radio PRIVATE ${COMMON_INCLUDES})
 

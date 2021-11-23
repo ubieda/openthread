@@ -39,6 +39,8 @@
 #include "cli/cli_config.h"
 #include "common/code_utils.hpp"
 
+#include "app.h"
+
 /**
  * This function initializes the CLI app.
  *
@@ -133,6 +135,10 @@ pseudo_reset:
 #if OPENTHREAD_POSIX && !defined(FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION)
     otCliSetUserCommands(kCommands, OT_ARRAY_LENGTH(kCommands), instance);
 #endif
+
+    int err;
+    err = app_InitNetworkDefaultCfg(instance);
+    assert(!err);
 
     while (!otSysPseudoResetWasRequested())
     {
