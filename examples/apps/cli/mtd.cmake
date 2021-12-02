@@ -30,6 +30,7 @@ add_executable(ot-cli-mtd
     cli_uart.cpp
     main.c
     app.c
+    scheduler.c
 )
 
 target_include_directories(ot-cli-mtd PRIVATE ${COMMON_INCLUDES})

@@ -30,6 +30,7 @@ add_executable(ot-cli-radio
     cli_uart.cpp
     main.c
     app.c
+    scheduler.c
 )
 
 target_compile_definitions(ot-cli-radio PRIVATE OT_RCP)

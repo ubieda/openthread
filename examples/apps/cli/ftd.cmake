@@ -30,6 +30,7 @@ add_executable(ot-cli-ftd
     cli_uart.cpp
     main.c
     app.c
+    scheduler.c
 )
 
 target_include_directories(ot-cli-ftd PRIVATE ${COMMON_INCLUDES})

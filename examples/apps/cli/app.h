@@ -7,7 +7,8 @@
 extern "C" {
 #endif
 
-int app_InitNetworkDefaultCfg(otInstance *instance);
+int app_Init(otInstance *instance);
+void app_ProcessEvents(otInstance *instance);
 
 #ifdef __cplusplus
 }

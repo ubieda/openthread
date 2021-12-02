@@ -137,13 +137,14 @@ pseudo_reset:
 #endif
 
     int err;
-    err = app_InitNetworkDefaultCfg(instance);
+    err = app_Init(instance);
     assert(!err);
 
     while (!otSysPseudoResetWasRequested())
     {
         otTaskletsProcess(instance);
         otSysProcessDrivers(instance);
+        app_ProcessEvents(instance);
     }
 
     otInstanceFinalize(instance);
