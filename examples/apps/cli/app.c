@@ -28,6 +28,36 @@ static bool mInterfererEnabled = false;
 
 static otInstance *mInstance;
 
+static void appEnableInterferer(bool enable)
+{
+    mInterfererEnabled = enable;
+}
+
+static bool appIsInterfererEnabled(void)
+{
+    return mInterfererEnabled;
+}
+
+static int enableThread(bool enable)
+{
+    int err = 0;
+
+#if !OT_RCP
+    err = otThreadSetEnabled(mInstance, enable);
+#endif
+    return err;
+}
+
+static int becomeChild(void)
+{
+    int err = 0;
+
+#if !OT_RCP
+    err = otThreadBecomeChild(mInstance);
+#endif
+    return err;
+}
+
 /** 
  * Scheduler Handler, here act all the periodic actions.
 */
@@ -36,9 +66,8 @@ static void handlerScheduler(void)
     static uint8_t tick = 0;
     bool toggleLed = false;
 
-    if (mInterfererEnabled) {
+    if (appIsInterfererEnabled()) {
         otSysLedToggle(4);
-
     } else if (tick % 10 == 0) {
         otSysLedToggle(4);
         tick = 0;
@@ -50,9 +79,30 @@ static void handlerScheduler(void)
 /**
  * Function to handle button push event
  */
-static void handleButtonInterrupt(otInstance *aInstance)
+static void handleButtonPressed(otInstance *aInstance, uint8_t aButton)
 {
-    mInterfererEnabled ^= 0x01;
+    switch(aButton) {
+        case 1:
+        {
+            bool currentState = appIsInterfererEnabled();
+            appEnableInterferer(!currentState);
+        }
+            break;
+        case 2:
+            (void)becomeChild();
+            break;
+        case 3:
+            if (otThreadGetDeviceRole(mInstance) == OT_DEVICE_ROLE_DISABLED) {
+                (void)enableThread(true);
+            } else {
+                (void)enableThread(false);
+            }
+            break;
+        case 4:
+            break;
+        default:
+            break;
+    }
 }
 
 static void handleNetifStateChanged(uint32_t aFlags, void *aContext)
@@ -129,7 +179,7 @@ int app_Init(otInstance *instance)
     otError err = 0;
 
     otSysLedInit();
-    otSysButtonInit(handleButtonInterrupt);
+    otSysButtonInit(handleButtonPressed);
 
     err = app_InitNetworkDefaultCfg(instance);
     if (err) {

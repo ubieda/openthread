@@ -105,7 +105,7 @@ void otSysLedToggle(uint8_t aLed);
 * A callback will be called when GPIO interrupts occur.
 *
 */
-typedef void (*otSysButtonCallback)(otInstance *aInstance);
+typedef void (*otSysButtonCallback)(otInstance *aInstance, uint8_t aButton);
 void otSysButtonInit(otSysButtonCallback aCallback);
 void otSysButtonProcess(otInstance *aInstance);
 
