@@ -3,11 +3,14 @@
 #include <openthread/instance.h>
 #include <openthread/thread_ftd.h>
 #include <openthread/ping_sender.h>
-#include <openthread/platform/alarm-milli.h>
 
 #include "openthread-system.h"
 #include "scheduler.h"
 #include "app.h"
+
+static bool mInterfererEnabled = false;
+
+static otInstance *mInstance;
 
 const otOperationalDataset dataset = {
     .mNetworkKey.m8 = {1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16},
@@ -24,9 +27,16 @@ const otOperationalDataset dataset = {
     },
 };
 
-static bool mInterfererEnabled = false;
-
-static otInstance *mInstance;
+const otPingSenderConfig pingConfig = {
+    .mDestination.mFields.m8 = {0xff, 0x02, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1}, /* Link-local multicast */
+    .mReplyCallback = NULL,
+    .mStatisticsCallback = NULL,
+    .mCallbackContext = NULL,
+    .mSize = 64,
+    .mCount = 0,
+    .mInterval = 0,
+    .mTimeout = 10,
+};
 
 static void appEnableInterferer(bool enable)
 {
@@ -65,9 +75,16 @@ static void handlerScheduler(void)
 {
     static uint8_t tick = 0;
     bool toggleLed = false;
+    otError err = 0;
 
     if (appIsInterfererEnabled()) {
         otSysLedToggle(4);
+#if !OT_RCP
+        err = otPingSenderPing(mInstance, &pingConfig);
+        if (err) {
+            otSysLedSet(4, true);
+        }
+#endif
     } else if (tick % 10 == 0) {
         otSysLedToggle(4);
         tick = 0;
