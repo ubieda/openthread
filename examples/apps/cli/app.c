@@ -58,12 +58,13 @@ static int enableThread(bool enable)
     return err;
 }
 
-static int becomeChild(void)
+static int toggleRouterEligibility(void)
 {
     int err = 0;
 
-#if !OT_RCP
-    err = otThreadBecomeChild(mInstance);
+#if OT_FTD
+    bool currentEligibility = otThreadIsRouterEligible(mInstance);
+    err = otThreadSetRouterEligible(mInstance, !currentEligibility);
 #endif
     return err;
 }
@@ -106,7 +107,7 @@ static void handleButtonPressed(otInstance *aInstance, uint8_t aButton)
         }
             break;
         case 2:
-            (void)becomeChild();
+            (void)toggleRouterEligibility();
             break;
         case 3:
             if (otThreadGetDeviceRole(mInstance) == OT_DEVICE_ROLE_DISABLED) {

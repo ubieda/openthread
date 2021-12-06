@@ -33,6 +33,8 @@ add_executable(ot-cli-ftd
     scheduler.c
 )
 
+target_compile_definitions(ot-cli-ftd PRIVATE OT_FTD)
+
 target_include_directories(ot-cli-ftd PRIVATE ${COMMON_INCLUDES})
 
 if(NOT DEFINED OT_PLATFORM_LIB_FTD)
