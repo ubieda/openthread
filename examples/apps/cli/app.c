@@ -2,7 +2,7 @@
 #include <openthread/dataset.h>
 #include <openthread/instance.h>
 #include <openthread/thread_ftd.h>
-#include <openthread/ping_sender.h>
+#include <openthread/udp.h>
 
 #include "openthread-system.h"
 #include "scheduler.h"
@@ -27,17 +27,6 @@ const otOperationalDataset dataset = {
     },
 };
 
-const otPingSenderConfig pingConfig = {
-    .mDestination.mFields.m8 = {0xff, 0x02, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1}, /* Link-local multicast */
-    .mReplyCallback = NULL,
-    .mStatisticsCallback = NULL,
-    .mCallbackContext = NULL,
-    .mSize = 64,
-    .mCount = 0,
-    .mInterval = 0,
-    .mTimeout = 10,
-};
-
 static void appEnableInterferer(bool enable)
 {
     mInterfererEnabled = enable;
@@ -57,6 +46,36 @@ static int enableThread(bool enable)
 #endif
     return err;
 }
+
+#if !OT_RCP
+static int sendInterferencePacket(void)
+{
+    otError err = 0;
+    const uint8_t tmpBuf[64] = {0};
+    otMessageInfo msgInfo = {
+        .mPeerAddr.mFields.m8 = {0xff, 0x02, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1}, /* Link-local multicast */
+        .mPeerPort = 33105,
+    };
+
+    otMessage *msg = otUdpNewMessage(mInstance, NULL);
+    if (!msg) {
+        return -1;
+    }
+
+    err = otMessageAppend(msg, tmpBuf, sizeof(tmpBuf));
+    if (err) {
+        return err;
+    }
+
+    err = otUdpSendDatagram(mInstance, msg,&msgInfo);
+    if (err) {
+        otMessageFree(msg);
+        return err;
+    }
+
+    return err;
+}
+#endif
 
 static int toggleRouterEligibility(void)
 {
@@ -81,7 +100,7 @@ static void handlerScheduler(void)
     if (appIsInterfererEnabled()) {
         otSysLedToggle(4);
 #if !OT_RCP
-        err = otPingSenderPing(mInstance, &pingConfig);
+        err = sendInterferencePacket();
         if (err) {
             otSysLedSet(4, true);
         }
